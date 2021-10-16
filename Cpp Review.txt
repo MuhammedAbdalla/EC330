@@ -1,0 +1,67 @@
+
+heap - Global Memory, stored
+stack - Grows and shrinks dynamically
+
+Variable Designators
+
+Extern
+ -Declaration exists somewhere else
+Const
+ -Var cannot be changed
+ -Defensive Programming
+Static
+ -In a function/method
+  -Stays in the heap, will not be out of scope
+ -In a Class
+  -All created objects in the class share same member variables
+
+Class Access Specifier
+
+Public - All members are accessible by any object
+Private - No members are accessible by any object
+Protected - Only members inside & Derived classes
+ - Class Shape has x y z
+ - Derived Class Square has a b c d that also access x y z from Class
+Constructor - A method that runs upon object declaration. Same name as Class name
+Destructor - A method that runs upon object deallocation. Same name as Class namme with '~' infront
+
+When to use a destructor 
+ - When a class has a huge amount of memory allocation
+ - When you want an action to happen after Class destruction
+
+No Garbage collection in C and C++
+ - To unallocate: free(memory)
+
+'this' pointer is used inside a Class or Struct to refer to itself
+
+overloading functions, depends on the arguments
+ - Matrix operator like the EC327 final project
+
+namespace
+ - list of variables and headers
+
+# - preprocessor directory. 
+Example:
+#ifndef - if not defined. Avoiding duplication
+#define - then include the class below
+ - Class {}
+#endif
+
+
+Templates - Generic Type
+ - Make a function work on different types
+Example:
+template <typedef T> 
+T max(T a, T b) {
+ return a > b ? a : b;
+}
+
+max(3,5) -> T is assumed to be a T
+
+Standard Template Library (STL)
+Containers:
+ - Deque; stack
+ - list; dynamic array
+ - vector; dynamic array
+ - map, multimap; key value pairs
+ - set, multiset; key value pairs
