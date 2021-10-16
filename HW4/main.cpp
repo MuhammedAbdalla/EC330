@@ -15,8 +15,10 @@ int main(int argc, const char * argv[]) {
     SkipList<int> *mySL= new SkipList<int>(INT_MIN, INT_MAX);
     
   mySL->insert(2);
+
   mySL->insert(1);
   mySL->insert(7);
+
   mySL->insert(5);
   mySL->insert(9);
   mySL->insert(6);
@@ -27,9 +29,9 @@ int main(int argc, const char * argv[]) {
   cout << "SkipList data: \n";
   mySL->printData();
     
-  cout << "\n SkipList entire content: \n";
-  mySL->print();
-  delete mySL;
+  // cout << "\n SkipList entire content: \n";
+  // mySL->print();
+  // delete mySL;
   
 
   return 0;

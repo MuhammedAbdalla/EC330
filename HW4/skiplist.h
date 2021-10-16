@@ -1,4 +1,4 @@
-//
+//  
 //  SkipList.h
 //  Skip_List
 //
@@ -116,13 +116,13 @@ LinkedList<T>::LinkedList(T minVal, T maxVal) {
 
 template<class T>
 LinkedList<T>::~LinkedList() {
-  // Free all elements (memory), deleting linked list
-  // Node<T>* element = this->head->next;
-    // do {
-    //     free(element);
-    //     element = element-> next;
+  //Free all elements (memory), deleting linked list
+  Node<T>* element = this->head->next;
+    do {
+       // free(element);
+        element = element-> next;
 
-    // } while (element != nullptr);
+    } while (element != nullptr);
 }
 
 int compareFunction(int a, int b) {
@@ -154,10 +154,10 @@ Node<T>* LinkedList<T>::search(Node<T>* head, T dataSer) {
 
     // search can traverse both ways if 'head' is not the start of the LL
     Node<T>* element = head;
-     do {
 
-        if (compareFunction(element->data, dataSer))
+     if (compareFunction(element->data, dataSer))
             return nullptr;
+     do {
         if (compareFunction(dataSer, element->data) && compareFunction(element->next->data, dataSer))
             return element;
 
@@ -166,8 +166,6 @@ Node<T>* LinkedList<T>::search(Node<T>* head, T dataSer) {
     } while (element != nullptr);
 
     do {
-        if (compareFunction(element->data, dataSer))
-            return nullptr;
         if (compareFunction(element->data, dataSer) && compareFunction(dataSer,element->prev->data))
             return element->prev;
 
@@ -201,7 +199,7 @@ Node<T>* LinkedList<T>::insert(Node<T>* head, T dataIns) {
     *(indxNode->next) = newNode;
     
   }
-  return indxNode;
+  return indxNode->next;
 }
 
 template<class T>
@@ -233,31 +231,76 @@ void LinkedList<T>::print() {
 /****** Skip List Implementation ******/
 
 template<class T>
-SkipList::SkipList(T minVal, T maxVal) {
-
+SkipList<T>::SkipList(T minVal, T maxVal) {
+    topList = new LinkedList<T>(minVal,maxVal);
 }
 
 template<class T>
-SkipList::~SkipList() {
+SkipList<T>::~SkipList() {
     // when init take the existing linked list put at the bottom
     //create a new LL with maximally increasing elements place above LL
         //match same elements with same elements, -inf to -inf inf to inf
 }
 
 template<class T>
-Node<T>* SkipList::search(T data) {
+Node<T>* SkipList<T>::search(T data) {
     // start from topList node 1, (-inf) 
     // finding value is always > -inf so go right else go down then right until fines value
     // when value0 is less than value V then look down-left, else look right
+    Node<T>* element = this -> topList -> head;
+
+    do {
+        if (data > element->data && data < element->next->data) {
+            if (element->down != nullptr){
+                element = element -> down;
+                cout<<"down"<<std::endl;
+                continue;
+            } else {
+                cout<<"found"<<std::endl;
+                return element;
+            }
+        } else {
+            element = element -> next;
+            cout<<"next"<<std::endl;
+        }
+    } while (element != nullptr);
+
+    return nullptr;
 }
 
 template<class T>
-void SkipList::printData(){
+Node<T>* SkipList<T>::insert(T data) {
+    // insert at topList
+    // then recreate skipLists
+    Node<T> *newNode, *indxNode;
+    indxNode = this -> search(data);
 
+    if (indxNode != nullptr) {
+        this -> topList -> insert(indxNode, data);
+    } else {
+
+    }
+
+    return newNode;
 }
 
 template<class T>
-void SkipList::print() {
+void SkipList<T>::printData(){
+
+    Node<T>* rowElem = this -> topList -> head;
+    Node<T>* colElem = this -> topList -> head;
+
+    do {
+        do {
+            rowElem -> printData();
+            rowElem = rowElem -> next;
+        } while (rowElem != nullptr);
+        colElem = colElem -> down;
+    } while (colElem != nullptr);
+}
+
+template<class T>
+void SkipList<T>::print() {
 
 }
 
