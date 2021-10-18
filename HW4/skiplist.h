@@ -253,14 +253,14 @@ Node<T>* SkipList<T>::search(T data) {
         if (data > element->data && data < element->next->data) {
             if (element->down != nullptr){
                 element = element -> down;
-                cout<<"down"<<std::endl;
+                // cout<<"down"<<std::endl;
                 continue;
             } else {
-                cout<<"found"<<std::endl;
+                // cout<<"found"<<std::endl;
                 return element;
             }
         } else {
-            element = element -> next;
+            // element = element -> next;
             cout<<"next"<<std::endl;
         }
     } while (element != nullptr);
