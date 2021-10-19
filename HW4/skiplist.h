@@ -1,4 +1,5 @@
-//  
+// Copyright 2021 Muhammed Abdalla muhabda@bu.edu
+// Copyright 2021 Johnson Yang johnsony@bu.edu
 //  SkipList.h
 //  Skip_List
 //
@@ -43,6 +44,7 @@ public:
     void printData();                               // prints linked list data
     void print();                                   // prints linked list with all nodes pointers
     Node<T>* head;                                  // head of list
+    Node<T>* tail;
 };
 
 template <class T>
@@ -53,7 +55,7 @@ public:
     ~SkipList();                                    // destructor
     Node<T>* search(T data);                        // search for data, return node <= data (existing node, or location
                                                     //  where new node should be inserted in the bottom-most list)
-    Node<T>* insert(T data);                            // insert node with data, return pointer if inserted, NULL if error
+    Node<T>* insert(T data);                        // insert node with data, return pointer if inserted, NULL if error
     void printData();                               // prints skip list data
     void print();                                   // prints skip list with all nodes pointers
     LinkedList<T> *topList;                         // pointer to the top-most list
@@ -112,17 +114,21 @@ LinkedList<T>::LinkedList(T minVal, T maxVal) {
 
     this->head->next->prev = (Node<T>*) malloc(sizeof(Node<T>));
     this->head->next->prev = this->head;
+
+    this->tail = (Node<T>*) malloc(sizeof(Node<T>));
+    *(this->tail) = *(this -> head -> next);
 }
 
-template<class T>
-LinkedList<T>::~LinkedList() {
-  //Free all elements (memory), deleting linked list
-  Node<T>* element = this->head->next;
-    do {
-       // free(element);
-        element = element-> next;
-
-    } while (element != nullptr);
+//destructor
+template <class T>
+LinkedList<T>::~LinkedList(){
+    Node<T>* temp = head;
+    Node<T>* next;
+    while (temp!=NULL){
+        next = temp->next;
+        delete temp;
+        temp = next;
+    }
 }
 
 int compareFunction(int a, int b) {
@@ -232,6 +238,7 @@ void LinkedList<T>::print() {
 
 template<class T>
 SkipList<T>::SkipList(T minVal, T maxVal) {
+    srand(this->randSeed);
     topList = new LinkedList<T>(minVal,maxVal);
 }
 
@@ -253,15 +260,15 @@ Node<T>* SkipList<T>::search(T data) {
         if (data > element->data && data < element->next->data) {
             if (element->down != nullptr){
                 element = element -> down;
-                // cout<<"down"<<std::endl;
+                //cout<<"down"<<std::endl;
                 continue;
             } else {
-                // cout<<"found"<<std::endl;
-                return element;
+                //cout<<"found"<<std::endl;
+                return element; // pos of the element prev to insert
             }
         } else {
-            // element = element -> next;
-            cout<<"next"<<std::endl;
+            element = element -> next;
+            //cout<<"next"<<std::endl;
         }
     } while (element != nullptr);
 
@@ -272,21 +279,54 @@ template<class T>
 Node<T>* SkipList<T>::insert(T data) {
     // insert at topList
     // then recreate skipLists
+
     Node<T> *newNode, *indxNode;
     indxNode = this -> search(data);
 
     if (indxNode != nullptr) {
-        this -> topList -> insert(indxNode, data);
-    } else {
+        // insert element at the bottom of the list
 
+        newNode = this -> topList -> insert(indxNode, data);
+        int flip = 0;
+        //will index upwards until flip is 0 or has index until the top level list
+        do { 
+            Node<T>* e = indxNode;
+
+            //go to -inf to go up
+            while (e->prev != nullptr) {
+                e = e->prev;
+            }
+            //index upwards
+            indxNode = e->up;
+           
+            if (indxNode == nullptr)
+                break;
+
+            newNode -> up = this -> topList -> insert(indxNode, data);
+            newNode -> up -> down = newNode;
+            // flip the coin
+            flip = getRand();
+        } while (flip == 1);
+
+        // this case is if the value has stacked to the top list. Adds the blank list.
+        if (this->topList->head->next->data != this->topList->tail->data) {
+            
+            LinkedList<T> *newTopList = new LinkedList<T>(this -> topList->head->data, this -> topList->tail->data);
+
+            //now stack new topList ontop
+            newTopList->head->down = this->topList->head;
+            newTopList->tail->down = this->topList->tail;
+            this->topList->head->up = newTopList->head;
+            this->topList->tail->up = newTopList->tail;
+
+            *(this -> topList) = *newTopList;
+        }
     }
-
     return newNode;
 }
 
 template<class T>
 void SkipList<T>::printData(){
-
     Node<T>* rowElem = this -> topList -> head;
     Node<T>* colElem = this -> topList -> head;
 
@@ -296,12 +336,25 @@ void SkipList<T>::printData(){
             rowElem = rowElem -> next;
         } while (rowElem != nullptr);
         colElem = colElem -> down;
+        rowElem = colElem;
+        cout<<std::endl;
     } while (colElem != nullptr);
 }
 
 template<class T>
 void SkipList<T>::print() {
+    Node<T>* rowElem = this -> topList -> head;
+    Node<T>* colElem = this -> topList -> head;
 
+    do {
+        do {
+            rowElem -> print();
+            rowElem = rowElem -> next;
+        } while (rowElem != nullptr);
+        colElem = colElem -> down;
+        rowElem = colElem;
+        cout<<std::endl;
+    } while (colElem != nullptr);
 }
 
 

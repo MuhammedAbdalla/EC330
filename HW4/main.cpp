@@ -1,4 +1,6 @@
-//
+// Copyright 2021 Muhammed Abdalla muhabda@bu.edu
+// Copyright 2021 Johnson Yang johnsony@bu.edu
+
 //  main.cpp
 //  Skip_List
 //
@@ -15,10 +17,8 @@ int main(int argc, const char * argv[]) {
     SkipList<int> *mySL= new SkipList<int>(INT_MIN, INT_MAX);
     
   mySL->insert(2);
-
   mySL->insert(1);
   mySL->insert(7);
-
   mySL->insert(5);
   mySL->insert(9);
   mySL->insert(6);
@@ -31,7 +31,7 @@ int main(int argc, const char * argv[]) {
     
   // cout << "\n SkipList entire content: \n";
   // mySL->print();
-  // delete mySL;
+  delete mySL;
   
 
   return 0;
