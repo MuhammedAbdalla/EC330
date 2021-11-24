@@ -7,27 +7,23 @@
 
 #include <iostream>
 #include <limits.h>
-#include "LinkedList.h"
+#include <vector>
+#include "LL.h"
+
+using std::vector;
 
 int main(int argc, const char * argv[]) {
+  vector<int> num1 = {1, 2, 3, 5, 7, 10, 20};
+  vector<int> num2 = {5, 7, 9, 10, 23, 24, 39};
 
   /* Uncomment */
-  LinkedList<char> *myLL = new LinkedList<char>(CHAR_MIN, CHAR_MAX);
-  Node<char> *newNodeLoc;
+  LinkedList *myLL1 = new LinkedList(num1);
+  LinkedList *myLL2 = new LinkedList(num2);
 
-  newNodeLoc = myLL->search(myLL->head, 'a');
-  myLL->insert(newNodeLoc, 'a');
-  newNodeLoc = myLL->search(myLL->head, '1');
-  myLL->insert(newNodeLoc, '1');
-  newNodeLoc = myLL->search(myLL->head, 'g');
-  myLL->insert(newNodeLoc, 'g');
 
-  cout << "Linked list data: \n";
-  myLL->printData();
 
-  cout << "\nLinked List entire content: \n";
-  myLL->print();
-  delete myLL;
-    
+  cout << "\nLinked List entire contents: \n";
+  // myLL1->print();
+  // myLL2->print();    
   return 0;
 }

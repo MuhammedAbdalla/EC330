@@ -96,13 +96,12 @@ LinkedList<T>::LinkedList(T minVal, T maxVal) {
 
 template<class T>
 LinkedList<T>::~LinkedList() {
-  // Free all elements (memory), deleting linked list
-  // Node<T>* element = this->head->next;
-    // do {
-    //     free(element);
-    //     element = element-> next;
-
-    // } while (element != nullptr);
+    Node<T>* temp = head;
+    while (temp!=NULL){
+        next = temp->next;
+        delete temp;
+        temp = next;
+    }
 }
 
 int compareFunction(int a, int b) {

@@ -11,7 +11,7 @@
 #include <limits.h>
 #include "SkipList.h"
 
-int main(int argc, const char * argv[]) {
+int main() {
 
   /* Uncomment */
     SkipList<int> *mySL= new SkipList<int>(INT_MIN, INT_MAX);

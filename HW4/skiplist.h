@@ -1,5 +1,5 @@
 // Copyright 2021 Muhammed Abdalla muhabda@bu.edu
-// Copyright 2021 Johnson Yang johnsony@bu.edu
+//  Copyright 2021 Johnson Yang johnsony@bu.edu
 //  SkipList.h
 //  Skip_List
 //
@@ -53,12 +53,15 @@ public:
     SkipList(T minVal, T maxVal);                   // constructor: accepts -infinity, +infinity values,
                                                     //  creates skip list with top-level only
     ~SkipList();                                    // destructor
-    Node<T>* search(T data);                        // search for data, return node <= data (existing node, or location
-                                                    //  where new node should be inserted in the bottom-most list)
-    Node<T>* insert(T data);                        // insert node with data, return pointer if inserted, NULL if error
+    Node<T>* search(T data);                        // search for data, return node <= data (existing node, or location                                            //  where new node should be inserted in the bottom-most list)
+    Node<T>* insert(T data);   
+                                                    // insert node with data, return pointer if inserted, NULL if error
     void printData();                               // prints skip list data
     void print();                                   // prints skip list with all nodes pointers
     LinkedList<T> *topList;                         // pointer to the top-most list
+    LinkedList<T> *botList;
+    LinkedList<T> *ll;
+    void fixtop();
     int randSeed = 330;                             // to be used as seed for the getRand() function
 };
 
@@ -98,25 +101,245 @@ void Node<T>::print()
 }
 
 
-/****** Implementation of linked list ******/
+/****** Skip List mplementation ******/
+template<class T>
+void SkipList<T>::fixtop(){
+    ll = new LinkedList<T>(botList->head->data,botList->tail->data);
+    ll->head->down = topList->head;
+    topList->head->up = ll->head;
+    ll->tail->down = topList->tail;
+    topList->tail->up = topList->tail;
+}
+
 
 template<class T>
-LinkedList<T>::LinkedList(T minVal, T maxVal) {
-    // inserts both end elements as nodes into list
+SkipList<T>::SkipList(T minVal, T maxVal){
+    LinkedList<T> *myLL = new LinkedList<T>(minVal, maxVal);
+    topList = myLL;
+    botList = myLL;
+    srand(this->randSeed);
+}
 
-    // allocate memory for the node<T>*
-    this->head = (Node<T>*) malloc(sizeof(Node<T>));
+template<class T>
+SkipList<T>::~SkipList(){   //deletes from top to right
+    Node<T> *temp;
+    Node<T> *next;
+    Node<T> *iterator = topList->head;
+    while(iterator!= NULL){
+        temp = iterator;
+        next = iterator;
+        while (temp!=NULL){
+            next = temp->next;
+            delete temp;
+            temp = next;
+        }
+    iterator = iterator->down;
+    }
 
-    *(this->head) = Node<T>(minVal);
+}
 
-    this->head->next = (Node<T>*) malloc(sizeof(Node<T>));
-    *(this->head->next) = Node<T>(maxVal);
+template<class T>
+Node<T>* SkipList<T>::search(T data){
+    Node<T> *iterator = topList->head;
+    while (iterator!=NULL){             //iterates through skiplist to return location if found
+        if (iterator->data == data){
+            return iterator;
+        } 
+        if (iterator->next->data < data){
+            iterator = iterator->next;
+        } else {
+            iterator = iterator->down;
+        }
+    }
 
-    this->head->next->prev = (Node<T>*) malloc(sizeof(Node<T>));
-    this->head->next->prev = this->head;
+    iterator = topList->head; //reset iterator
+    while (iterator != NULL){          //iteratres through skiplist to return location to put if not found
+        if (iterator->data < data && iterator->next->data > data){
+            return iterator;
+        } 
+        if (iterator->next->data < data){
+            iterator = iterator->next;
+        } else {
+            iterator = iterator->down;
+        }
+    }
+}
 
-    this->tail = (Node<T>*) malloc(sizeof(Node<T>));
-    *(this->tail) = *(this -> head -> next);
+template<class T>
+Node<T>* SkipList<T>::insert(T data){
+    Node<T> *location;
+    Node<T> *temp = botList->head;
+    Node<T> *iterator;
+    Node<T> *n ;
+    int level = 0, i;
+    
+    while(temp != NULL){               //first loop to find data == data in LL
+        if (temp->data == data){
+            return NULL;
+        }
+        temp = temp->next;
+    }
+    temp = botList->head;
+    location = botList->search(botList->head,data);
+    location = botList->insert(location,data);
+
+
+    while(getRand() == 1){
+        temp = botList->head;
+        for(i=0;i<level;i++){
+            temp = temp->up;
+            location = location->up;
+        }
+
+        n = new Node<T>(data);
+        n->down = location;
+        location->up = n;
+        
+        //cout << temp->up << '\n';
+
+        if (temp->up == NULL){  //if there is no inf / -inf existing it will make it 
+            topList = new LinkedList<T>(botList->head->data,botList->tail->data);
+            topList->head->down=temp;
+            temp->up = topList->head;
+            while(temp->next != NULL){
+                temp = temp->next;
+            }
+            topList->tail->down=temp;
+            temp->up = topList->tail;
+            temp = topList->head;
+        } else {
+            temp = temp->up;
+        }
+
+
+        //cout << n << '\n' << temp << '\n' << location << '\n' << location->data << '\n';
+        while (temp != NULL){
+            if (temp->next->data > data && temp->data < data){
+                n->next = temp->next;
+                n->prev = temp;
+                temp->next = n;
+                if (n->next != NULL){
+                    n->next->prev = n;
+                }
+                break;
+            }   
+            temp = temp->next;
+        }
+        level++;
+    }
+    
+    return location;
+}
+
+template<class T>   
+void SkipList<T>::printData(){     //prints from top left to bottom right
+    fixtop();
+    Node<T> *PrintingDown = topList->head->up;
+    Node<T> *PrintingRight;
+    while (PrintingDown != NULL){
+        PrintingRight = PrintingDown;
+        while (PrintingRight != NULL){
+            PrintingRight->printData();
+            PrintingRight = PrintingRight->next;
+        }
+        
+        cout << '\n';
+        PrintingDown = PrintingDown->down;
+        
+    }
+    delete ll;
+}
+
+template<class T>
+void SkipList<T>::print(){  //prints from top left to bottom left
+    Node<T> *PrintingDown = topList->head;
+    Node<T> *PrintingRight;
+
+    while (PrintingDown != NULL){
+        PrintingRight = PrintingDown;
+        while (PrintingRight != NULL){
+            PrintingRight->print();
+            PrintingRight = PrintingRight->next;
+        }
+        cout << '\n';
+        PrintingDown = PrintingDown->down;
+    }
+    
+}
+
+/*** TO BE COMPLETED ***/
+
+/****** Implementation of linked list ******/
+
+//searching for node location or where to place it
+template<class T>
+Node<T>* LinkedList<T>::search(Node<T>* location, T data){
+    Node<T>* temp = location;
+    
+    while(temp != NULL){                 //if data isn't in LL, find where it should go
+        if (temp->data < data && temp->next->data > data){
+                return temp;
+        }
+        temp = temp->next;
+    }
+    return NULL;
+}
+
+//insert a node
+template<class T>
+Node<T>* LinkedList<T>::insert(Node<T>* location, T data){
+    Node<T> *temp;
+    if (location->next->data < data || location->data > data){  
+        return NULL;            //if list isnt sorted, return NULL, else insert node
+    }
+    temp = new Node<T>(data);
+    temp->next = location->next;
+    temp->prev = location;
+    location->next = temp;
+    if (temp->next != NULL){
+        temp->next->prev=temp;
+    }
+    return temp;
+}
+
+//constructor
+template<class T>
+LinkedList<T>::LinkedList(T minVal, T maxVal){
+    Node<T> *n;
+
+    n = new Node<T>(minVal);
+    head = n;
+    tail = n;
+
+    n = new Node<T>(maxVal);
+    n->prev = tail;
+    tail->next = n;
+    tail = n;
+
+    tail->next = NULL;
+}
+
+//printing data
+template <class T>
+void LinkedList<T>::printData()
+{
+    Node<T>* temp = head;
+    while(temp != NULL){
+        temp->printData();
+        temp = temp->next;
+    }
+}
+
+//printing everything
+template <class T>
+void LinkedList<T>::print()
+{
+    Node<T>* temp = head;
+    while(temp != NULL){
+        temp->print();
+        cout << '\n';
+        temp = temp->next;
+    }
 }
 
 //destructor
@@ -131,231 +354,7 @@ LinkedList<T>::~LinkedList(){
     }
 }
 
-int compareFunction(int a, int b) {
-  if (a == b)
-    return a == b;
-  return a > b;
-}
-int compareFunction(char a, char b) {
-  return compareFunction(static_cast<int>(a), static_cast<int>(b));
-}
 
-int compareFunction(std::string a, std::string b) {
-  return compareFunction(a.at(0),b.at(0));
-}
-
-int compareFunction(char* a, char* b) {
-  return compareFunction(std::string(a),std::string(b));
-}
-
-template<class T>
-Node<T>* LinkedList<T>::search(Node<T>* head, T dataSer) {
-    // start from the head of the list and find, return if found.
-    // return preceeding element if not found
-
-    Node<T>* n = (Node<T>*) malloc(sizeof(Node<T>));
-    // do-while used similar to for (int i = 0; element->next != nullptr; i++) 
-    // but to count AND iterate
-    // theta(n) linear search
-
-    // search can traverse both ways if 'head' is not the start of the LL
-    Node<T>* element = head;
-
-     if (compareFunction(element->data, dataSer))
-            return nullptr;
-     do {
-        if (compareFunction(dataSer, element->data) && compareFunction(element->next->data, dataSer))
-            return element;
-
-        element = element-> next;
-
-    } while (element != nullptr);
-
-    do {
-        if (compareFunction(element->data, dataSer) && compareFunction(dataSer,element->prev->data))
-            return element->prev;
-
-        element = element-> prev;
-
-    } while (element != nullptr);
-
-    return element;
-}
-
-template<class T>
-Node<T>* LinkedList<T>::insert(Node<T>* head, T dataIns) {
-    // search will be called first. no duplicates, so if found do not ins
-    // if not found preeceeding pointer then ins nextptr making current nextptr the new element
-    // returns the locations of the new pointer in the LL
-    // INT & DOUBLE: BY INCREASING ORDER
-    // CHAR BY ASCII VALUE
-    // STRING BY FIRST LETTER - USING CHAR TO COMPARE
-
-  Node<T>* indxNode = search(head, dataIns);
-  if (indxNode->data == dataIns) {
-    return indxNode;
-  } else {
-    Node<T> newNode = Node<T>(dataIns);
-    // prev-> <-newblock-> <-next
-
-    newNode.prev = indxNode;
-    newNode.next = (Node<T>*) malloc(sizeof(Node<T>));
-    *(newNode.next) = *(indxNode->next);
-
-    *(indxNode->next) = newNode;
-    
-  }
-  return indxNode->next;
-}
-
-template<class T>
-void LinkedList<T>::printData() {
-    // prints the contents of the LL, sep by spaces
-    Node<T>* element = this->head;
-    do {
-        cout << element-> data << " ";
-        element = element-> next;
-
-    } while (element != nullptr);
-
-    cout << std::endl;
-}
-
-template<class T>
-void LinkedList<T>::print() {
-    // prints everything: node's address and pointers and data
-    Node<T>* element = this->head;
-    do {
-        element->print();
-        cout << std::endl;
-        element = element-> next;
-
-    } while (element != nullptr);
-}
-
-
-/****** Skip List Implementation ******/
-
-template<class T>
-SkipList<T>::SkipList(T minVal, T maxVal) {
-    srand(this->randSeed);
-    topList = new LinkedList<T>(minVal,maxVal);
-}
-
-template<class T>
-SkipList<T>::~SkipList() {
-    // when init take the existing linked list put at the bottom
-    //create a new LL with maximally increasing elements place above LL
-        //match same elements with same elements, -inf to -inf inf to inf
-}
-
-template<class T>
-Node<T>* SkipList<T>::search(T data) {
-    // start from topList node 1, (-inf) 
-    // finding value is always > -inf so go right else go down then right until fines value
-    // when value0 is less than value V then look down-left, else look right
-    Node<T>* element = this -> topList -> head;
-
-    do {
-        if (data > element->data && data < element->next->data) {
-            if (element->down != nullptr){
-                element = element -> down;
-                //cout<<"down"<<std::endl;
-                continue;
-            } else {
-                //cout<<"found"<<std::endl;
-                return element; // pos of the element prev to insert
-            }
-        } else {
-            element = element -> next;
-            //cout<<"next"<<std::endl;
-        }
-    } while (element != nullptr);
-
-    return nullptr;
-}
-
-template<class T>
-Node<T>* SkipList<T>::insert(T data) {
-    // insert at topList
-    // then recreate skipLists
-
-    Node<T> *newNode, *indxNode;
-    indxNode = this -> search(data);
-
-    if (indxNode != nullptr) {
-        // insert element at the bottom of the list
-
-        newNode = this -> topList -> insert(indxNode, data);
-        int flip = 0;
-        //will index upwards until flip is 0 or has index until the top level list
-        do { 
-            Node<T>* e = indxNode;
-
-            //go to -inf to go up
-            while (e->prev != nullptr) {
-                e = e->prev;
-            }
-            //index upwards
-            indxNode = e->up;
-           
-            if (indxNode == nullptr)
-                break;
-
-            newNode -> up = this -> topList -> insert(indxNode, data);
-            newNode -> up -> down = newNode;
-            // flip the coin
-            flip = getRand();
-        } while (flip == 1);
-
-        // this case is if the value has stacked to the top list. Adds the blank list.
-        if (this->topList->head->next->data != this->topList->tail->data) {
-            
-            LinkedList<T> *newTopList = new LinkedList<T>(this -> topList->head->data, this -> topList->tail->data);
-
-            //now stack new topList ontop
-            newTopList->head->down = this->topList->head;
-            newTopList->tail->down = this->topList->tail;
-            this->topList->head->up = newTopList->head;
-            this->topList->tail->up = newTopList->tail;
-
-            *(this -> topList) = *newTopList;
-        }
-    }
-    return newNode;
-}
-
-template<class T>
-void SkipList<T>::printData(){
-    Node<T>* rowElem = this -> topList -> head;
-    Node<T>* colElem = this -> topList -> head;
-
-    do {
-        do {
-            rowElem -> printData();
-            rowElem = rowElem -> next;
-        } while (rowElem != nullptr);
-        colElem = colElem -> down;
-        rowElem = colElem;
-        cout<<std::endl;
-    } while (colElem != nullptr);
-}
-
-template<class T>
-void SkipList<T>::print() {
-    Node<T>* rowElem = this -> topList -> head;
-    Node<T>* colElem = this -> topList -> head;
-
-    do {
-        do {
-            rowElem -> print();
-            rowElem = rowElem -> next;
-        } while (rowElem != nullptr);
-        colElem = colElem -> down;
-        rowElem = colElem;
-        cout<<std::endl;
-    } while (colElem != nullptr);
-}
 
 
 #endif /* SkipList_h */

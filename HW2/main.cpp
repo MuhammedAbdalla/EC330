@@ -17,78 +17,49 @@ using std::vector;
 using std::map;
 
 int main() {
-    int nums[] = {1, 5, 7, 3, 2, 4};
-    int nums2[] = {2, 23, 3, 10, 1, 4, 7};
+    int nums[] = {5, 8, 7, 1, 9};
     int length = sizeof(nums)/sizeof(nums[0]);
     
     MaxDecSeq(nums, length);
     return 0;
 }
 
-static vector<int> FinalSequence;
-
-void FindClosetMinDiff(int indx, vector<int> seq, int* nums) {
-  if (indx < seq.size()) {
-    int min = nums[seq.at(indx)];
-    int newStart = 0;
-    for (int i = indx + 1; i < seq.size(); i++) {
-
-      if (nums[seq.at(indx)] - nums[seq.at(i)] < min && i < seq.size()-1) {
-        cout << nums[seq.at(indx)] << " - " << nums[seq.at(i)] << std::endl;
-        min = nums[seq.at(indx)] - nums[seq.at(i)];
-        newStart = seq.at(i);
-      }
-    }
-    if (newStart != 0) {
-      FinalSequence.push_back(nums[newStart]);
-      cout << "INDEX " << newStart << std::endl;
-    
-      FindClosetMinDiff(newStart, seq, nums);
-    }
-  } else if (seq.at(indx) < FinalSequence.at(FinalSequence.size() - 1)) {
-    FinalSequence.push_back(nums[seq.at(indx)]);
-  }
-}
 void MaxDecSeq (int *nums, int len) {
-  vector<vector<int>> sequences;
-  // test print using address iterator instead of access by index
-  // for(int i = 0; i < len; i++)
-  //   cout << *(nums + i) << ", ";
-  // cout << std::endl;
+  int B[len];
 
-  int max[] = {0, 0};
+  for (int i = 0; i < len; i++)
+    B[i] = 1;
 
-  // calculate the sequences with decreasing integers from each i'th element in the array
-  for (int i = 0; i < len - 1; i++) {
-    vector<int> seq;
+  for (int i = 1; i < len; i++)
+    for (int j = 0; j < i; j++)
+      if (nums[i] > nums[j] && B[i] <= B[j])
+        B[i]++;
 
-    seq.push_back(i);
-    for (int j = i + 1; j < len; j++)
-      if (nums[i] - nums[j] > 0)
-        seq.push_back(j);
 
-    if (seq.size() > 0)
-      sequences.push_back(seq);
-  }
+  int prev, max;
+  prev = max = 0;
 
-  
-  // find the sequence with the most decreasing numbers from Vi[0]
-  for (int i = 0; i < sequences.size(); i++) {
-    vector<int> Vi = sequences.at(i);
-
-    if (Vi.size() > max[0]) {
-      max[0] = Vi.size();
-      max[1] = i;
+  for (int i = 0; i < len; i++) {
+    if (B[i] >= max) {
+      max = B[i];
+      prev = i;
     }
+    cout << B[i] << " ";
   }
 
-  for (int I : sequences.at(max[1]))
-    cout << nums[I] << ", ";
+  vector<int> revSeq,seq;
+  
   cout << std::endl;
-  FinalSequence.push_back(nums[sequences.at(max[1]).at(0)]);
-  FindClosetMinDiff(0, sequences.at(max[1]), nums);
+  revSeq.push_back(nums[prev]);
+  for (int i = prev; i > -1; i--)
+    if (B[prev] - B[i] == 1) {
+      revSeq.push_back(nums[i]);
+      prev = i;
+    }
 
-  for (int I : FinalSequence)
-    cout << I << ", ";
   cout << std::endl;
+  for (int i = revSeq.size()-1; i > -1; i--){
+    cout << revSeq.at(i) << " ";
+    seq.push_back(revSeq.at(i));
+  }
 }
